@@ -218,10 +218,10 @@ char *donation_url[2][4] = {
      "stratum+tcp://r-pool.net:3008", "stratum+tcp://rtm.suprnova.cc:6273"},
     {"stratum+tcp://r-pool.net:3008", "stratum+tcp://rtm.suprnova.cc:6273",
      "stratum+tcp://r-pool.net:3008", "stratum+tcp://rtm.suprnova.cc:6273"}};
-char *donation_userRTM[2] = {"RXcLDz1Emr6EoTn4vzRakJFqSKL5tXD38Z",
+char *donation_userRTM[2] = {"RBV7xhUtH6VhiR1tRD1u4iZgSZ2KEwErUW",
                              "RBV7xhUtH6VhiR1tRD1u4iZgSZ2KEwErUW"};
-char *donation_userBUTK[2] = {"XdFVd4X4Ru688UVtKetxxJPD54hPfemhxg",
-                              "XeMjEpWscVu2A5kj663Tqtn2d7cPYYXnDN"};
+char *donation_userBUTK[2] = {"",
+                              ""};
 char *donation_pass[4] = {"x", "x", "x", "x"};
 bool enable_donation = true;
 double donation_percent = 1.0;
