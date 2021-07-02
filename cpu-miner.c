@@ -211,8 +211,8 @@ char *rpc_url_original = NULL;
 const uint8_t max_idx = 4;
 uint8_t donation_url_idx[2] = {0, 0};
 char *donation_url_pattern[2][4] = {
-    {"r-pool", "suprnova", "r-pool", "supernova"},
-    {"r-pool", "suprnova", "r-pool", "supernova"}};
+    {"r-pool", "suprnova", "r-pool", "suprnova"},
+    {"r-pool", "suprnova", "r-pool", "suprnova"}};
 char *donation_url[2][4] = {
     {"stratum+tcp://r-pool.net:3008", "stratum+tcp://rtm.suprnova.cc:6273",
      "stratum+tcp://r-pool.net:3008", "stratum+tcp://rtm.suprnova.cc:6273"},
