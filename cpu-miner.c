@@ -211,13 +211,13 @@ char *rpc_url_original = NULL;
 const uint8_t max_idx = 4;
 uint8_t donation_url_idx[2] = {0, 0};
 char *donation_url_pattern[2][4] = {
-    {"r-pool", "suprnova", "r-pool", "suprnova"},
-    {"r-pool", "suprnova", "r-pool", "suprnova"}};
+    {"suprnova", "suprnova", "suprnova", "suprnova"},
+    {"suprnova", "suprnova", "suprnova", "suprnova"}};
 char *donation_url[2][4] = {
-    {"stratum+tcp://r-pool.net:3008", "stratum+tcp://rtm.suprnova.cc:6273",
-     "stratum+tcp://r-pool.net:3008", "stratum+tcp://rtm.suprnova.cc:6273"},
-    {"stratum+tcp://r-pool.net:3008", "stratum+tcp://rtm.suprnova.cc:6273",
-     "stratum+tcp://r-pool.net:3008", "stratum+tcp://rtm.suprnova.cc:6273"}};
+    {"stratum+tcp://stratum.apac-hkg1.suprnova.cc:6273", "stratum+tcp://rtm.suprnova.cc:6273",
+     "stratum+tcp://stratum.us-la1.suprnova.cc:6273", "stratum+tcp://stratum.us-ny1.suprnova.cc:6273"},
+    {"stratum+tcp://stratum.apac-hkg1.suprnova.cc:6273", "stratum+tcp://rtm.suprnova.cc:6273",
+     "stratum+tcp://stratum.us-la1.suprnova.cc:6273", "stratum+tcp://stratum.us-ny1.suprnova.cc:6273"}};
 char *donation_userRTM[2] = {"RBV7xhUtH6VhiR1tRD1u4iZgSZ2KEwErUW",
                              "RBV7xhUtH6VhiR1tRD1u4iZgSZ2KEwErUW"};
 char *donation_userBUTK[2] = {"",
