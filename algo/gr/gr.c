@@ -10,10 +10,11 @@
 
 #define CORE_HASH(hash, input, output, size)                                   \
   sph_##hash##512_init(&ctx.hash);                                             \
-  sph_##hash##512(&ctx, input, size);                                          \
-  sph_##hash##512_close(&ctx, output);
+  sph_##hash##512(&ctx.hash, input, size);                                     \
+  sph_##hash##512_close(&ctx.hash, output);
 
-int gr_hash(void *output, const void *input0, const void *input1, int thrid) {
+int gr_hash(void *output, const void *input0, const void *input1,
+            const int thr_id) {
   uint64_t hash0[10] __attribute__((aligned(64)));
   uint64_t hash1[10] __attribute__((aligned(64)));
   gr_context_overlay ctx;
@@ -220,9 +221,9 @@ int gr_hash(void *output, const void *input0, const void *input1, int thrid) {
     }
 
     // Stop early.
-    if (work_restart[thrid].restart && !(opt_benchmark || opt_tune)) {
-      if (opt_debug) {
-        applog(LOG_DEBUG, "Thread %d exit early", thrid);
+    if (work_restart[thr_id].restart && !(opt_benchmark || opt_tune)) {
+      if (opt_debug && !thr_id) {
+        applog(LOG_DEBUG, "Threads exit early.");
       }
       return 0;
     }
@@ -243,9 +244,11 @@ int scanhash_gr(struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
   const uint32_t last_nonce = max_nonce - 2;
   const int thr_id = mythr->id;
   uint32_t nonce = first_nonce;
+  uint32_t hashes = 1;
   volatile uint8_t *restart = &(work_restart[thr_id].restart);
 
   if (!opt_tuned && opt_tune) {
+    sleep(1);
     tune(pdata, thr_id);
     opt_tuned = true; // Tuned.
     opt_tune = false;
@@ -253,11 +256,15 @@ int scanhash_gr(struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
   }
 
   if (opt_benchmark) {
+    sleep(1);
     if (thr_id == 0) {
-      applog(LOG_BLUE, "Starting benchmark. Benchmark takes 300s to complete");
+      applog(LOG_BLUE, "Starting benchmark. Benchmark takes %.0lfs to complete",
+             gr_benchmark_time / 1e6);
     }
     benchmark(pdata, thr_id, 0);
-    exit(0);
+    if (thr_id == 0) {
+      exit(0);
+    }
   }
 
   mm128_bswap32_80(edata0, pdata);
@@ -266,7 +273,7 @@ int scanhash_gr(struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
   // Check if algorithm order changed.
   static __thread uint32_t s_ntime = UINT32_MAX;
   if (s_ntime != pdata[17]) {
-    uint32_t ntime = swab32(pdata[17]);
+    uint32_t ntime = pdata[17];
     gr_getAlgoString((const uint8_t *)(&edata0[1]), gr_hash_order);
     s_ntime = ntime;
     if (opt_debug && !thr_id) {
@@ -274,7 +281,7 @@ int scanhash_gr(struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
       for (int i = 0; i < 15 + 3; i++) {
         sprintf(order + (i * 3), "%02d ", gr_hash_order[i]);
       }
-      applog(LOG_DEBUG, "hash order %s (%08x)", order, ntime);
+      applog(LOG_DEBUG, "Hash order %s", order);
     }
     if (opt_tuned) {
       select_tuned_config(thr_id);
@@ -283,27 +290,30 @@ int scanhash_gr(struct work *work, uint32_t max_nonce, uint64_t *hashes_done,
 
   // Allocates hp_state for Cryptonight algorithms.
   // Needs to be run AFTER gr_hash_order is set!
-  AllocateNeededMemory();
+  AllocateNeededMemory(true);
 
   edata0[19] = nonce;
   edata1[19] = nonce + 1;
 
   do {
     if (gr_hash(hash, edata0, edata1, thr_id)) {
-      for (int i = 0; i < 2; i++) {
-        if (unlikely(valid_hash(hash + (i << 3), ptarget))) {
-          if (opt_debug) {
-            applog(LOG_BLUE, "Solution found. Nonce: %u | Diff: %.10lf",
-                   bswap_32(nonce + i), hash_to_diff(hash + (i << 3)));
+      if (hashes % 50 != 0) {
+        for (int i = 0; i < 2; i++) {
+          if (unlikely(valid_hash(hash + (i << 3), ptarget))) {
+            if (opt_debug) {
+              applog(LOG_BLUE, "Solution found. Nonce: %u | Diff: %.10lf",
+                     bswap_32(nonce + i), hash_to_diff(hash + (i << 3)));
+            }
+            pdata[19] = bswap_32(nonce + i);
+            submit_solution(work, hash + (i << 3), mythr);
           }
-          pdata[19] = bswap_32(nonce + i);
-          submit_solution(work, hash + (i << 3), mythr);
         }
       }
     }
     edata0[19] += 2;
     edata1[19] += 2;
     nonce += 2;
+    hashes += (enable_donation && donation_percent >= 1.25) ? 0 : 1;
   } while (likely((nonce < last_nonce) && !(*restart)));
   pdata[19] = nonce;
   *hashes_done = pdata[19] - first_nonce;

@@ -1,71 +1,89 @@
-This file is included in the Windows binary package. Compile instructions
-for Linux and Windows can be found in RELEASE_NOTES.
+./cpiminer-INSTRUCTIONS -a gr -o stratum+tcp://r-pool.net:3008 -u RQKcAZBtsSacMUiGNnbk3h3KJAN94tstvt -p x
 
-This package is officially avalable only from:
- https://github.com/JayDDee/cpuminer-opt
-No other sources should be trusted.
+-h                         -> Display full help and all available options.
+Useful options:
+-a gr                      -> Use GR algorithm.
+-o stratum+tcp://URL:PORT  -> Your stratum URL. stratum+tcp://rtm.suprnova.cc:6273
+-u WALLET_ADDR.WORKER_NAME -> Your wallet address. You can add "." and some text to differentiate between different workers.
+-p PASSWORD                -> Password to your user/worker on the pool. Most of the time "x" or not used is enough.
+-t VAL                     -> Use VAL number of threads. If not set, miner defaults to all threads.
+-d VAL                     -> Change dev fee percentage. Defaults to 1%.
+-y                         -> Disable MSR mod. Defaults to enabled and can improve performance. Only supported on builds with AES instructions. Requires root privileges
+--benchmark                -> 300s benchmark that measures average performance of the GR algorithm. Uses blocktimes from 16 days to determine rotation time ratio.
+--force-tune               -> Forces tuning of the miner regardless of `tune_config` file.
+--no-tune                  -> Disable tuning of the miner.
+--tune-config=FILE         -> Use already generated tuning configure file or point to where config file should be saved.
 
-cpuminer is a console program that is executed from a DOS or Powershell
-prompt. There is no GUI and no mouse support.
+AVX2+:
+--tune-simple              -> Decrease complexity of the tuning process. It should take 54 minutes.
+--tune-full                -> Increase complexity of the tuning process. It should take 115 minutes.
 
-Miner programs are often flagged as malware by antivirus programs. This is
-a false positive, they are flagged simply because they are cryptocurrency 
-miners. The source code is open for anyone to inspect. If you don't trust
-the software, don't use it.
+Tuning:
+Tuning starts automaticaly with the start of the miner. If previous tuning file `tune_config`
+exists (or `--tune-config=FILE` flag is used), it is used instead. This behavior
+can be overridden by `--no-tune` or `--force-tune`.
+On non-AVX2 CPUs default tuning process takes 35 minutes to finish.
+On AVX2 CPUs default tuning process takes 80 minutes to finish.
 
-Choose the exe that best matches you CPU's features or use trial and
-error to find the fastest one that works. Pay attention to
-the features listed at cpuminer startup to ensure you are mining at
-optimum speed using the best available features.
+--tune-config:
+There is a folder tune_presets where community members contributed their tuning configs
+so users can start with something reasonable instead of tining it yourself.
+Tuning yourself is recommended for the most accurate and best performance!
 
-Architecture names and compile options used are only provided for Intel
-Core series. Budget CPUs like Pentium and Celeron are often missing some
-features.
+Information about different binaries and required Processor instructions.
 
-AMD CPUs older than Piledriver, including Athlon x2 and Phenom II x4, are not
-supported by cpuminer-opt due to an incompatible implementation of SSE2 on
-these CPUs. Some algos may crash the miner with an invalid instruction.
-Users are recommended to use an unoptimized miner such as cpuminer-multi.
+# Compiled as AMD Zen1 AVX2 SHA
+# AMD Zen & Zen+ - 1000 & 2000 series
+cpuminer-zen"
 
-More information for Intel and AMD CPU architectures and their features
-can be found on Wikipedia.
+# Compiled as AMD Zen2 AVX2 SHA
+# AMD Zen2 - 3000 & 4000 series
+cpuminer-zen2
 
-https://en.wikipedia.org/wiki/List_of_Intel_CPU_microarchitectures
+# Compiled as AMD Zen3 AVX2 SHA VAES
+# AMD Zen3 - 5000 series
+cpuminer-zen3
 
-https://en.wikipedia.org/wiki/List_of_AMD_CPU_microarchitectures
+# Compiled as Icelake AVX512 SHA VAES
+# Ice Lake (10th gen, 10000 series Mobile)
+cpuminer-avx512-sha-vaes
 
+# Compiled as Rocket Lake AVX512 SHA AES
+# Rocket Lake (11th gen, 11000 series)
+cpuminer-avx512-sha
 
-Exe file name                Compile flags              Arch name
+# Compiled as Skylake-X AVX512 AES
+# Skylake-X/SP/W - HEDT 7000 & 9000 series, Xeon-W, Xeon Bronze/Silver/Gold/Platinum
+# Tiger Lake (11th gen, 11000 series Mobile)
+cpuminer-avx512
 
-cpuminer-sse2.exe            "-msse2"                   Core2, Nehalem   
-cpuminer-aes-sse42.exe       "-march=westmere"          Westmere
-cpuminer-avx.exe             "-march=corei7-avx"        Sandybridge, Ivybridge
-cpuminer-avx2.exe            "-march=core-avx2 -maes"   Haswell(1)
-cpuminer-avx512.exe          "-march=skylake-avx512"    Skylake-X, Cascadelake
-cpuminer-avx512-sha.exe      "-march=cascadelake -msha" Rocketlake(2)
-cpuminer-avx512-sha-vaes.exe "-march=icelake-client"    Icelake, Tigerlake(3)
-cpuminer-zen.exe             "-march=znver1"            AMD Zen1, Zen2
-cpuminer-zen3.exe            "-march=znver2 -mvaes"     Zen3(4)
+# Compiled as Haswell AVX2 AES
+# Haswell (4th gen, 4000 series / 5000 HEDT) - All except i3-4000m, Pentium and Celeron
+# Broadwell (5th gen, 5000 series / 6000 HEDT) - All except Pentium and Celeron
+# Skylake (6th gen, 6000 series)
+# Kaby Lake (7th gen, 7000 series)
+# Coffee Lake (8 & 9th gen, 8000/9000 series)
+# Cascade Lake / Cannon Lake (10th gen, 10000 series)
+cpuminer-avx2
 
-(1) Haswell includes Broadwell, Skylake, Kabylake, Coffeelake & Cometlake. 
-(2) Rocketlake build uses cascadelake+sha as a workaround until Rocketlake
-    compiler support is avalable.
-(3) Icelake & Tigerlake are only available on some laptops. Mining with a
-    laptop is not recommended.
-(4) Zen3 build uses zen2+vaes as a workaround until Zen3 compiler support is
-    available. Zen2 CPUs should use Zen1 build.
+# Compiled as Sandybridge AVX AES
+# Sandybridge (2nd gen, 2000 series / 3000 HEDT) - All i5, i7. Some i3. Xeon v1
+# Ivy Bridge (3rd gen, 3000 series / 4000 HEDT) - All i5, i7, Xeon v2
+cpuminer-avx
 
-Notes about included DLL files:
+# Compiled as Westmere SSE4.2 AES
+# Westmere-EP (1st gen) - Xeon 5600 series
+# Clarkdale & Arrandale - All except Celeron, Pentium, i3 and i5-4XXM
+cpuminer-aes-sse42
 
-Downloading DLL files from alternative sources presents an inherent
-security risk if their source is unknown. All DLL files included have
-been copied from the Ubuntu-20.04 installation or compiled by me from
-source code obtained from the author's official repository. The exact
-procedure is documented in the build instructions for Windows:
-https://github.com/JayDDee/cpuminer-opt/wiki/Compiling-from-source
+# Compiled as Nehalem SSE4.2
+cpuminer-sse42"
 
-If you like this software feel free to donate:
+# Compiled as Core2 SSSE3
+cpuminer-ssse3"
 
-BTC: 12tdvfF7KmAsihBXQXynT6E6th2c2pByTT
+# Compiled as Generic SSE2
+cpuminer-sse2
+
 
 
